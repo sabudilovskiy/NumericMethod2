@@ -1,0 +1,11 @@
+[requires]
+gtest/cci.20210126
+[generators]
+cmake_paths
+cmake_find_package
+
+[options]
+
+[imports]
+bin, *.dll -> ./bin # Copies all dll files from packages bin folder to my "bin" folder
+lib, *.dylib* -> ./bin # Copies all dylib files from packages lib folder to my "bin" folder
