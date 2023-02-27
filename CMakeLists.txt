@@ -8,6 +8,7 @@ find_package(GTest)
 add_library(${PROJECT_NAME}_objs
         src/math/matrix.hpp
         src/math/solver.hpp
+        src/utils/generator.hpp
         src/math/empty.cpp)
 
 
@@ -16,7 +17,10 @@ add_library(${PROJECT_NAME}_objs
 include(GoogleTest)
 add_executable( ${PROJECT_NAME}_tests
         src/utils/private_cracker.hpp
-        tests/gauss_solver.cpp)
+        tests/gauss_solver.cpp
+        tests/rotation_solver.cpp
+        tests/make_matrix.cpp
+        )
 target_link_libraries(${PROJECT_NAME}_tests PRIVATE
         GTest::gtest
         GTest::gtest_main

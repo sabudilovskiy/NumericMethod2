@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NUMERIC_METHODS2_PRIVATE_CRACKER
+#define NUMERIC_METHODS2_PRIVATE_CRACKER
 
 template<size_t N>
 struct reader {
@@ -105,3 +106,4 @@ decltype(auto) crack_invoke##_##name(Obj&& obj, Args... args){ \
     } \
     else return  (obj.*ptr)(); \
 }
+#endif

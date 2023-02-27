@@ -1,4 +1,6 @@
-#pragma once
+#ifndef NUMERIC_METHODS2_MATH_MATRIX
+#define NUMERIC_METHODS2_MATH_MATRIX
+
 #include <vector>
 #include <fstream>
 #include <sstream>
@@ -14,7 +16,7 @@ namespace math {
         size_t n;
     };
 
-    void IncompatibleSizeRows(size_t cur) {
+    inline void IncompatibleSizeRows(size_t cur) {
         auto msg = std::string{"Не совпадают размеры строк: "}
                 .append(std::to_string(cur - 1))
                 .append(" и ")
@@ -22,7 +24,12 @@ namespace math {
         throw std::runtime_error(msg);
     }
 
-    void NonSquareMatrix(size_t lines, size_t columns) {
+    inline void EmptyMatrix() {
+        auto msg = std::string{"Матрица нет: "};
+        throw std::runtime_error(msg);
+    }
+
+    inline void NonSquareMatrix(size_t lines, size_t columns) {
         auto msg = std::string{"Матрица не квадратная: "}
                 .append(std::to_string(lines))
                 .append(" x ")
@@ -30,7 +37,7 @@ namespace math {
         throw std::runtime_error(msg);
     }
 
-    void IncompatibleSizeFreeColumns(size_t expected, size_t got) {
+    inline void IncompatibleSizeFreeColumns(size_t expected, size_t got) {
         auto msg = std::string{"Не совпадают размеры матрицы и столбца свободных членов: "}
                 .append(std::to_string(expected))
                 .append(" != ")
@@ -39,19 +46,27 @@ namespace math {
     }
 
     template<typename Stream>
-    Matrix MakeMatrix(Stream &stream) {
+    Matrix MakeMatrix(Stream &&stream) {
         std::string line;
         Matrix matrix;
         auto&[arr_, free_col, n] = matrix;
         size_t cur = 0;
-        while (std::getline(stream, line)) {
-            std::stringstream ss{std::move(line)};
+        if (!std::getline(stream, line)){
+            EmptyMatrix();
+        }
+        n = std::stoll(line);
+        while (cur < n && std::getline(stream, line)) {
+            std::stringstream ss{line};
             Matrix::Row row;
             std::copy(std::istream_iterator<double>(ss), std::istream_iterator<double>(), std::back_inserter(row));
             arr_.push_back(std::move(row));
             if (cur >= 1 && arr_[cur].size() != arr_[cur - 1].size()) {
                 IncompatibleSizeRows(cur);
             }
+            cur++;
+        }
+        if (arr_.size() == 0){
+            EmptyMatrix();
         }
         if (arr_.size() != arr_[0].size()) {
             NonSquareMatrix(arr_.size(), arr_[0].size());
@@ -64,3 +79,4 @@ namespace math {
         return matrix;
     }
 }
+#endif

@@ -1,6 +1,3 @@
-////
-//// Created by MRV on 27.02.2023.
-////
 #include <gtest/gtest.h>
 #include "math/solver.hpp"
 #include "utils/private_cracker.hpp"
