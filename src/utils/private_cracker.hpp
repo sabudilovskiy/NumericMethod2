@@ -1,7 +1,5 @@
 #pragma once
 
-namespace utils{
-
 template<size_t N>
 struct reader {
     friend auto counted_flag(reader<N>);
@@ -79,25 +77,31 @@ struct ADLKey {
 };
 
 
-#define CreateGetter(Class, member, Member, name) \
-template struct ::utils::DefinitionInserter<::utils::ADLKey<size_t, ::utils::IncCounter(), Member>, &Class::member>; \
-decltype(auto) crack_get##_##name(){ \
-    static constexpr auto num = ::utils::CurCounter(); \
-    return impl_GetPrivateMember(::utils::ADLKey<size_t, num, Member>{}); \
+#define CreateGetterPtr(Class, member, Member, name) \
+template struct DefinitionInserter<ADLKey<size_t, IncCounter(), Member>, &Class::member>; \
+decltype(auto) crack_ptr_get##_##name(){ \
+    static constexpr auto num = CurCounter(); \
+    return impl_GetPrivateMember(ADLKey<size_t, num, Member>{}); \
 }                                                 \
 
+#define CreateGetter(Class, member, Member, name) \
+CreateGetterPtr(Class, member, Member, name)\
+template <class Obj> \
+decltype(auto) crack_get##_##name(Obj&& obj){ \
+    static constexpr auto num = CurCounter(); \
+    auto ptr = crack_ptr_get##_##name(); \
+    return  (obj.*ptr); \
+}
 
 #define CreateInvoker(Class, member, Member, name) \
-CreateGetter(Class, member, Member, name)\
+CreateGetterPtr(Class, member, Member, name)\
 template <class Obj, typename... Args> \
-decltype(auto) crack_use##_##name(Obj&& obj, Args... args){ \
-    static constexpr auto num = ::utils::CurCounter(); \
-    auto ptr = crack_get##_##name(); \
+decltype(auto) crack_invoke##_##name(Obj&& obj, Args... args){ \
+    static constexpr auto num = CurCounter(); \
+    auto ptr = crack_ptr_get##_##name(); \
     static constexpr auto len = sizeof...(args); \
     if constexpr (len > 0){ \
         (obj.*ptr)(std::forward<Args>(args)...); \
     } \
     else return  (obj.*ptr)(); \
-}
-
 }

@@ -16,7 +16,7 @@ add_library(${PROJECT_NAME}_objs
 include(GoogleTest)
 add_executable( ${PROJECT_NAME}_tests
         src/utils/private_cracker.hpp
-        tests/basic.cpp)
+        tests/gauss_solver.cpp)
 target_link_libraries(${PROJECT_NAME}_tests PRIVATE
         GTest::gtest
         GTest::gtest_main

@@ -27,7 +27,7 @@ namespace math {
             row[index] = 1;
         }
 
-        void LazySublines(size_t from, size_t to) {
+        void LazySublinesDown(size_t from, size_t to) {
             auto &from_line = matrix_.arr_[from];
             auto &to_line = matrix_.arr_[to];
             auto cof = to_line[from];
@@ -38,25 +38,51 @@ namespace math {
             matrix_.free_col[to] -=  matrix_.free_col[from] * cof;
         }
 
-        void ResetColumn(size_t index_col) {
+        void ResetColumnDown(size_t index_col) {
             for (size_t i = index_col + 1; i < matrix_.n; ++i) {
-                LazySublines(index_col, i);
+                LazySublinesDown(index_col, i);
             }
         }
+
 
         void TransformUpTriangle() {
             for (size_t cur = 0; cur < matrix_.n; ++cur) {
                 Normalize(cur);
-                ResetColumn(cur);
+                ResetColumnDown(cur);
             }
         }
 
+        void LazySublinesUp(size_t from, size_t to) {
+            auto &to_line = matrix_.arr_[to];
+            auto cof = to_line[from];
+            to_line[from] = 0;
+            matrix_.free_col[to] -=  matrix_.free_col[from] * cof;
+        }
+        void ResetColumnUp(size_t index_col) {
+            for (size_t i = index_col; i > 0; --i) {
+                LazySublinesUp(index_col, i - 1);
+            }
+        }
+        void TransformDownTriangle() {
+            for (size_t cur = matrix_.n; cur > 0; --cur) {
+                ResetColumnUp(cur - 1);
+            }
+        }
+        void Solve(){
+            TransformUpTriangle();
+            TransformDownTriangle();
+        }
     public:
         Solver(Matrix matrix) : matrix_(std::move(matrix)) {}
-        const Matrix& GetMatrix(){
-            return matrix_;
+        const Matrix::Col& GetSolution(){
+            if (!solved){
+                Solve();
+                solved = true;
+            }
+            return matrix_.free_col;
         }
     private:
+        bool solved = false;
         Matrix matrix_;
     };
 }
