@@ -1,7 +1,7 @@
 #include <iostream>
 #include "math/solver.hpp"
 #include "utils/generator.hpp"
-
+#include "Windows.h"
 template <typename Solution>
 void PrintGeneratedSolution(Solution&& solution){
     std::cout << "Сгенерированное решение: \n";
@@ -52,7 +52,25 @@ math::Matrix ToMatrix(From&& from) {
     return matrix;
 }
 
+template<typename ExpectedSolution, typename GetSolution>
+void CompareSolutions(ExpectedSolution&& expected_solution, GetSolution&& get_solution){
+    size_t N = expected_solution.size();
+    std::vector<double> arr;
+    arr.resize(N);
+    for (size_t i = 0; i < N; i++){
+        arr[i] = std::abs(expected_solution[i] - get_solution[i]);
+    }
+    std::cout << "dif: \n";
+    for (auto& x : arr){
+        std::cout << x << '\n';
+    }
+    auto max = std::max_element(arr.begin(),  arr.end());
+    std::cout << "error: " << *max << '\n';
+}
+
 int main() {
+    SetConsoleCP(65001);
+    SetConsoleOutputCP(65001);
     while (true){
         static size_t constexpr k = 3;
         auto checker = [](size_t i, size_t j, size_t size){
@@ -65,20 +83,21 @@ int main() {
                 .kMax = range};
         Generator<double, gen_traits, RandomSeed::Yes, std::uniform_real_distribution<double>> generator{checker};
         generator.Generate();
-        PrintGenerateResult(generator.GetResult());
-        auto [arr, col, _] = generator.GetResult();
+        auto [arr, col, expected_solution] = generator.GetResult();
         try{
             math::Solver<math::Method::Gauss> solver_gauss{ToMatrix(generator.GetResult())};
             math::Solver<math::Method::Rotations> solver_rotations{ToMatrix(generator.GetResult())};
+            PrintGenerateResult(generator.GetResult());
             std::cout << "Gauss: \n";
             PrintSolution(solver_gauss.GetSolution());
             std::cout << "Rotations: \n";
             PrintSolution(solver_rotations.GetSolution());
+            CompareSolutions(expected_solution, solver_gauss.GetSolution());
+            CompareSolutions(expected_solution, solver_rotations.GetSolution());
         }
         catch (std::exception& exc){
             std::cout << exc.what();
         }
-        PrintGeneratedSolution(std::get<2>(generator.GetResult()));
         std::cin.get();
     }
     return 0;
